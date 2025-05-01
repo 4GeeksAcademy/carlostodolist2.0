@@ -1,26 +1,91 @@
-import React from "react";
-
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
+import React, { useState } from "react";
 
 //create your first component
 const Home = () => {
-	return (
-		<div className="text-center">
-            
 
-			<h1 className="text-center mt-5">Hello Rigo!</h1>
-			<p>
-				<img src={rigoImage} />
-			</p>
-			<a href="#" className="btn btn-success">
-				If you see this green button... bootstrap is working...
-			</a>
-			<p>
-				Made by{" "}
-				<a href="http://www.4geeksacademy.com">4Geeks Academy</a>, with
-				love!
-			</p>
+
+	let [todos, setTodos] = useState([]);
+
+	let [texto, setTexto] = useState("");
+
+
+	let maximoTareas = 5;
+
+	const agregar = (e) => {
+		//verifica si la tecla es enter
+		if (e.key == "Enter") {
+			//valida si hay info en el input
+			if (texto == "") {
+				return;
+			}
+			//limite de tareas
+			if (todos.length < maximoTareas) {
+				todos.push(texto);
+			} else {
+				alert('solo puedes agregar maximo ' + maximoTareas + ' elementos');
+			}
+			//limpiar form
+			setTexto("");
+
+		}
+	}
+	const obtenerTareas = () => {
+
+		fetch('https://playground.4geeks.com/todo/users/prueba123', {
+			method: "GET"
+		})
+		.then(resp => {
+			console.log(resp.ok); // Será true si la respuesta es exitosa
+			console.log(resp.status); // El código de estado 201, 300, 400, etc.
+			return resp.json(); // Intentará parsear el resultado a JSON y retornará una promesa donde puedes usar .then para seguir con la lógica
+		})
+		.then(data => {
+			// Aquí es donde debe comenzar tu código después de que finalice la búsqueda
+			console.log(data); // Esto imprimirá en la consola el objeto exacto recibido del servidor
+			setTodos(data)
+		})
+		.catch(error => {
+			// Manejo de errores
+			console.log(error);
+		});
+
+	}
+
+	const cambioTexto = (e) => {
+		setTexto(e.target.value);
+	}
+
+	const eliminarTarea = (paramIndex) => {
+		let elementos = todos.filter((item, index) => index !== paramIndex);
+		setTodos(elementos);
+	}
+
+	return (
+		<div className="row justify-content-center">
+			<div className="col-md-6 col-xl-6 col-sm-12">
+				<h1 className="text-center">Todos</h1>
+				<ul className="list-group mt-4">
+					<li className="list-group-item">
+						<input type="text"
+							className="form-control"
+							placeholder="Ingrese una tarea"
+							value={texto}
+							onChange={cambioTexto}
+							onKeyDown={agregar} />
+					</li>
+					{
+						todos.map((item, index) => (
+							<li className="list-group-item tarea" key={index}>
+								{item}
+								<span className="float-end btnEliminar d-none" onClick={() => eliminarTarea(index)}>X</span>
+							</li>
+						))
+					}
+					<li className="list-group-item text-muted">Total tareas {todos.length}</li>
+
+				</ul>
+			</div>
+
 		</div>
 	);
 };
